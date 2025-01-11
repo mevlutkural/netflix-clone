@@ -50,7 +50,6 @@ Detailed installation instructions will be added as the project progresses.
 
 ### Branch Strategy
 - `main`: Production-ready code
-- `develop`: Development branch
 - `feature/*`: New features
 - `bugfix/*`: Bug fixes
 - `hotfix/*`: Urgent fixes for production
@@ -66,4 +65,4 @@ We follow the [Conventional Commits](https://www.conventionalcommits.org/) speci
 - `chore`: Build process or auxiliary tool changes
 
 ## License
-This project is open source and available under the [MIT License](LICENSE). 
+This project is open source and available under the [MIT License](LICENSE) 
