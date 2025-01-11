@@ -1,9 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NetflixClone.API.Extensions;
-using NetflixClone.Application.Common.Models;
-using NetflixClone.Application.DTOs;
 using NetflixClone.Application.Features.Profiles.Commands.CreateProfile;
 using NetflixClone.Application.Features.Profiles.Commands.DeleteProfile;
 using NetflixClone.Application.Features.Profiles.Commands.UpdateProfile;
@@ -25,83 +22,43 @@ public class ProfilesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<Result<IEnumerable<ProfileDto>>>> GetProfiles()
+    public async Task<IActionResult> GetProfiles()
     {
-        var userId = User.GetUserId();
-        var query = new GetProfilesByUserIdQuery(userId);
+        var query = new GetProfilesByUserIdQuery();
         var result = await _mediator.Send(query);
-
-        if (result.IsFailure)
-            return BadRequest(result);
-
         return Ok(result);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Result<ProfileDto>>> GetProfile(Guid id)
+    public async Task<IActionResult> GetProfile(Guid id)
     {
-        var userId = User.GetUserId();
-        var query = new GetProfileByIdQuery(id, userId);
+        var query = new GetProfileByIdQuery { Id = id };
         var result = await _mediator.Send(query);
-
-        if (result.IsFailure)
-            return BadRequest(result);
-
         return Ok(result);
     }
 
     [HttpPost]
-    public async Task<ActionResult<Result<ProfileDto>>> CreateProfile(CreateProfileDto createProfileDto)
+    public async Task<IActionResult> CreateProfile([FromBody] CreateProfileCommand command)
     {
-        var userId = User.GetUserId();
-        var command = new CreateProfileCommand
-        {
-            Name = createProfileDto.Name,
-            AvatarUrl = createProfileDto.AvatarUrl,
-            IsKidsProfile = createProfileDto.IsKidsProfile,
-            Language = createProfileDto.Language,
-            MaturityLevel = createProfileDto.MaturityLevel,
-            UserId = userId
-        };
-
         var result = await _mediator.Send(command);
-
-        if (result.IsFailure)
-            return BadRequest(result);
-
-        return CreatedAtAction(nameof(GetProfile), new { id = result.Data!.Id }, result);
+        return CreatedAtAction(nameof(GetProfile), new { id = result.Id }, result);
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<Result<ProfileDto>>> UpdateProfile(Guid id, UpdateProfileDto updateProfileDto)
+    public async Task<IActionResult> UpdateProfile(Guid id, [FromBody] UpdateProfileCommand command)
     {
-        var command = new UpdateProfileCommand
-        {
-            Id = id,
-            Name = updateProfileDto.Name,
-            AvatarUrl = updateProfileDto.AvatarUrl,
-            Language = updateProfileDto.Language,
-            MaturityLevel = updateProfileDto.MaturityLevel
-        };
+        if (id != command.Id)
+            return BadRequest();
 
         var result = await _mediator.Send(command);
-
-        if (result.IsFailure)
-            return BadRequest(result);
-
         return Ok(result);
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult<Result>> DeleteProfile(Guid id)
+    public async Task<IActionResult> DeleteProfile(Guid id)
     {
-        var userId = User.GetUserId();
-        var command = new DeleteProfileCommand(id, userId);
-        var result = await _mediator.Send(command);
-
-        if (result.IsFailure)
-            return BadRequest(result);
-
-        return Ok(result);
+        var command = new DeleteProfileCommand { Id = id };
+        await _mediator.Send(command);
+        return NoContent();
     }
 } 
